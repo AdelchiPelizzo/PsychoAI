@@ -33,15 +33,7 @@ import androidx.compose.runtime.LaunchedEffect
 @Composable
 fun ChatScreen() {
 
-    val openAIService = OpenAIService()
-
-    val repository = ConversationRepository(
-        openAIService
-    )
-
-    val factory = ChatViewModelFactory(
-        repository
-    )
+    val factory = ChatViewModelFactory()
 
     val viewModel: ChatViewModel = viewModel(
         factory = factory

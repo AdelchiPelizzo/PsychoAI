@@ -1,14 +1,54 @@
 package com.adelforce.psychoai.ai
 
+import com.adelforce.psychoai.BuildConfig
+
+
 class OpenAIService {
+
+
+    private val api =
+        NetworkModule.openAIApi
+
+
+    private val apiKey = BuildConfig.OPENAI_API_KEY
+    init {
+        println("API KEY LENGTH = ${apiKey.length}")
+    }
+
 
 
     suspend fun askAI(
         message: String
     ): String {
 
-        // Temporary placeholder
-        return "AI response will appear here"
+
+        println("OPENAI REQUEST: $message")
+
+        println(
+            "KEY LENGTH = ${BuildConfig.OPENAI_API_KEY.length}"
+        )
+
+
+        val response =
+            NetworkModule.openAIApi.createResponse(
+                authorization =
+                    "Bearer ${BuildConfig.OPENAI_API_KEY}",
+                request =
+                    ResponseRequest(
+                        model = "gpt-4.1-mini-2025-04-14",
+                        input = message
+                    )
+            )
+
+
+        println("OPENAI RESPONSE: $response")
+
+
+        return response.output
+            .first()
+            .content
+            .first()
+            .text
 
     }
 

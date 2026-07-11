@@ -1,28 +1,21 @@
 package com.adelforce.psychoai.ui
 
-
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
-import com.adelforce.psychoai.repository.ConversationRepository
 
 
-class ChatViewModelFactory(
-    private val repository: ConversationRepository
-) : ViewModelProvider.Factory {
+class ChatViewModelFactory : ViewModelProvider.Factory {
 
 
     override fun <T : ViewModel> create(
         modelClass: Class<T>
     ): T {
 
-
         if (modelClass.isAssignableFrom(ChatViewModel::class.java)) {
 
-            @Suppress("UNCHECKED_CAST")
-            return ChatViewModel(repository) as T
+            return ChatViewModel() as T
 
         }
-
 
         throw IllegalArgumentException(
             "Unknown ViewModel class"

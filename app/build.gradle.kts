@@ -1,10 +1,29 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
+    id("org.jetbrains.kotlin.plugin.serialization")
 }
+
+val localProperties = Properties()
+
+val localPropertiesFile = rootProject.file("local.properties")
+
+if (localPropertiesFile.exists()) {
+    localProperties.load(localPropertiesFile.inputStream())
+}
+
+val openAIKey =
+    localProperties.getProperty("OPENAI_API_KEY") ?: ""
 
 android {
     namespace = "com.adelforce.psychoai"
+
+    buildFeatures {
+        compose = true
+        buildConfig = true
+    }
     compileSdk {
         version = release(37) {
             minorApiLevel = 1
@@ -19,6 +38,18 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField(
+            "String",
+            "TEST_VALUE",
+            "\"hello\""
+        )
+
+        buildConfigField(
+            "String",
+            "OPENAI_API_KEY",
+            "\"$openAIKey\""
+        )
     }
 
     buildTypes {
@@ -31,9 +62,6 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
-    }
-    buildFeatures {
-        compose = true
     }
 }
 
@@ -54,6 +82,13 @@ dependencies {
     implementation("androidx.compose.material:material-icons-extended")
 
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
+
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-kotlinx-serialization:2.11.0")
+
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
 
     testImplementation(libs.junit)
