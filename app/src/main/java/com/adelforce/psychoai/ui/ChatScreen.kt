@@ -30,11 +30,19 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.runtime.remember
+import com.adelforce.psychoai.data.local.DatabaseProvider
 
 @Composable
 fun ChatScreen() {
 
     val context = LocalContext.current
+
+    val database =
+        remember {
+            DatabaseProvider.getDatabase(context)
+        }
+
+    val messageDao = database.messageDao()
 
     val openAIService =
         remember {
@@ -44,13 +52,15 @@ fun ChatScreen() {
     val repository =
         remember {
             ConversationRepository(
-                openAIService
+                openAIService,
+                messageDao
             )
         }
 
     val factory =
         ChatViewModelFactory(
             repository,
+            messageDao,
             context
         )
 
@@ -59,6 +69,8 @@ fun ChatScreen() {
             factory = factory
         )
 
+
+    val isLoading by viewModel.isLoading.collectAsState()
     val listState = rememberLazyListState()
     val messages by viewModel.messages.collectAsState()
 
@@ -157,6 +169,13 @@ fun ChatScreen() {
                         modifier = Modifier.fillMaxSize(),
                         state = listState
                     ) {
+                        if (isLoading) {
+                            item {
+                                Text(
+                                    text = "PsychoAI is thinking..."
+                                )
+                            }
+                        }
 
                         items(messages) { message ->
 

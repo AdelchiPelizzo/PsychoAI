@@ -5,7 +5,11 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 data class ResponseRequest(
+
     val model: String,
+
+    val instructions: String,
+
     val input: String
 )
 

@@ -30,12 +30,13 @@ class OpenAIService {
 
 
         val response =
-            NetworkModule.openAIApi.createResponse(
+            api.createResponse(
                 authorization =
                     "Bearer ${BuildConfig.OPENAI_API_KEY}",
                 request =
                     ResponseRequest(
                         model = "gpt-4.1-mini-2025-04-14",
+                        instructions = PsychoAIPrompt.systemInstruction,
                         input = message
                     )
             )
