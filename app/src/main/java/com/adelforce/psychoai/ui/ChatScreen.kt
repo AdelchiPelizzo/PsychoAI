@@ -26,18 +26,38 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import com.adelforce.psychoai.ui.components.MessageBubble
 import com.adelforce.psychoai.ai.OpenAIService
 import com.adelforce.psychoai.repository.ConversationRepository
-import com.adelforce.psychoai.ui.ChatViewModelFactory
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.runtime.remember
 
 @Composable
 fun ChatScreen() {
 
-    val factory = ChatViewModelFactory()
+    val context = LocalContext.current
 
-    val viewModel: ChatViewModel = viewModel(
-        factory = factory
-    )
+    val openAIService =
+        remember {
+            OpenAIService()
+        }
+
+    val repository =
+        remember {
+            ConversationRepository(
+                openAIService
+            )
+        }
+
+    val factory =
+        ChatViewModelFactory(
+            repository,
+            context
+        )
+
+    val viewModel: ChatViewModel =
+        viewModel(
+            factory = factory
+        )
 
     val listState = rememberLazyListState()
     val messages by viewModel.messages.collectAsState()

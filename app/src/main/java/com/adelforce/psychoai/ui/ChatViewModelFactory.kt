@@ -1,10 +1,15 @@
 package com.adelforce.psychoai.ui
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.adelforce.psychoai.repository.ConversationRepository
 
 
-class ChatViewModelFactory : ViewModelProvider.Factory {
+class ChatViewModelFactory(
+    private val repository: ConversationRepository,
+    private val context: Context
+) : ViewModelProvider.Factory {
 
 
     override fun <T : ViewModel> create(
@@ -13,7 +18,10 @@ class ChatViewModelFactory : ViewModelProvider.Factory {
 
         if (modelClass.isAssignableFrom(ChatViewModel::class.java)) {
 
-            return ChatViewModel() as T
+            return ChatViewModel(
+                repository,
+                context
+            ) as T
 
         }
 

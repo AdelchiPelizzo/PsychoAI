@@ -10,23 +10,19 @@ import java.util.concurrent.TimeUnit
 
 object NetworkModule {
 
-
     private const val BASE_URL =
         "https://api.openai.com/"
-
 
     private val json = Json {
         ignoreUnknownKeys = true
     }
 
-
     private val client =
         OkHttpClient.Builder()
-            .connectTimeout(30, TimeUnit.SECONDS)
-            .readTimeout(60, TimeUnit.SECONDS)
-            .writeTimeout(30, TimeUnit.SECONDS)
+            .connectTimeout(10, TimeUnit.SECONDS)
+            .readTimeout(20, TimeUnit.SECONDS)
+            .writeTimeout(10, TimeUnit.SECONDS)
             .build()
-
 
     private val retrofit =
         Retrofit.Builder()
@@ -38,8 +34,6 @@ object NetworkModule {
             )
             .client(client)
             .build()
-
-
 
     val openAIApi: OpenAIApi =
         retrofit.create(
