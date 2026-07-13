@@ -1,23 +1,17 @@
 package com.adelforce.psychoai.data.local
 
-
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-
 @Entity(
-    tableName = "messages"
+    tableName = "conversations"
 )
-data class MessageEntity(
+data class ConversationEntity(
 
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
 
-    val conversationId: Long,
+    val createdAt: Long,
 
-    val role: String,
-
-    val text: String,
-
-    val timestamp: Long
+    val title: String? = null
 )

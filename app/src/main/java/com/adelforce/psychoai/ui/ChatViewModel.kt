@@ -19,41 +19,97 @@ class ChatViewModel(
 ) : ViewModel() {
 
 
+    private val _conversationId =
+        MutableStateFlow<Long?>(null)
+
+
+    val conversationId =
+        _conversationId.asStateFlow()
+
+
+
+    init {
+
+        println("CHAT VIEWMODEL CREATED")
+
+        viewModelScope.launch {
+
+            val id =
+                repository.getActiveConversationId()
+
+
+            _conversationId.value =
+                id
+
+
+            println(
+                "ACTIVE CONVERSATION ID = $id"
+            )
+
+        }
+
+    }
+
+
+
     private val _temporaryMessages =
         MutableStateFlow<List<Message>>(emptyList())
 
 
+
     val messages: StateFlow<List<Message>> =
-        combine(
-            messageDao.getAll(),
-            _temporaryMessages
-        ) { databaseMessages, temporaryMessages ->
+
+        conversationId
+            .filterNotNull()
+            .flatMapLatest { id ->
+
+                combine(
+
+                    messageDao.getMessagesForConversation(id),
+
+                    _temporaryMessages
+
+                ) { databaseMessages, temporaryMessages ->
 
 
-            val savedMessages =
-                databaseMessages.map { entity ->
+                    val savedMessages =
+                        databaseMessages.map { entity ->
 
-                    Message(
-                        id = entity.id,
-                        text = entity.text,
-                        role =
-                            if (entity.role == "USER")
-                                Role.USER
-                            else
-                                Role.ASSISTANT,
-                        timestamp = entity.timestamp
-                    )
+
+                            Message(
+
+                                id = entity.id,
+
+                                text = entity.text,
+
+                                role =
+                                    if (entity.role == "USER")
+                                        Role.USER
+                                    else
+                                        Role.ASSISTANT,
+
+                                timestamp = entity.timestamp
+
+                            )
+
+                        }
+
+
+                    savedMessages + temporaryMessages
+
                 }
 
-
-            savedMessages + temporaryMessages
-
-        }
+            }
             .stateIn(
+
                 viewModelScope,
+
                 SharingStarted.WhileSubscribed(5000),
+
                 emptyList()
+
             )
+
 
 
 
@@ -63,6 +119,7 @@ class ChatViewModel(
 
     val isLoading: StateFlow<Boolean> =
         _isLoading
+
 
 
 
@@ -87,7 +144,10 @@ class ChatViewModel(
             NetworkUtils.isInternetAvailable(context)
 
 
-        println("INTERNET AVAILABLE = $internetAvailable")
+
+        println(
+            "INTERNET AVAILABLE = $internetAvailable"
+        )
 
 
 
@@ -100,7 +160,9 @@ class ChatViewModel(
 
 
             return
+
         }
+
 
 
 
@@ -117,12 +179,13 @@ class ChatViewModel(
                 repository.sendMessage(text)
 
 
-                // remove only temporary errors
                 _temporaryMessages.value =
                     emptyList()
 
 
             }
+
+
             catch (e: Exception) {
 
 
@@ -131,16 +194,19 @@ class ChatViewModel(
                 )
 
 
+
                 val errorText =
                     when (e) {
 
 
                         is java.net.UnknownHostException ->
+
                             "No internet connection. Please check your network."
 
 
 
                         is java.net.SocketTimeoutException ->
+
                             "The AI service is taking too long to respond. Please try again."
 
 
@@ -148,7 +214,7 @@ class ChatViewModel(
                         is retrofit2.HttpException -> {
 
 
-                            when (e.code()) {
+                            when(e.code()) {
 
 
                                 401 ->
@@ -163,11 +229,13 @@ class ChatViewModel(
                                     "Server error (${e.code()}). Please try again."
 
                             }
+
                         }
 
 
 
                         else ->
+
                             "Something went wrong: ${e.message}"
 
                     }
@@ -176,16 +244,20 @@ class ChatViewModel(
 
                 showTemporaryError(errorText)
 
-            }
-            finally {
 
+            }
+
+
+            finally {
 
                 _isLoading.value = false
 
             }
 
         }
+
     }
+
 
 
 
@@ -195,13 +267,19 @@ class ChatViewModel(
 
 
         _temporaryMessages.value =
+
             listOf(
 
                 Message(
+
                     id = System.currentTimeMillis(),
+
                     text = text,
+
                     role = Role.ASSISTANT,
+
                     timestamp = System.currentTimeMillis()
+
                 )
 
             )

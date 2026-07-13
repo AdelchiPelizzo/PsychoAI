@@ -35,7 +35,10 @@ import com.adelforce.psychoai.data.local.DatabaseProvider
 @Composable
 fun ChatScreen() {
 
+
+
     val context = LocalContext.current
+
 
     val database =
         remember {
@@ -50,10 +53,11 @@ fun ChatScreen() {
         }
 
     val repository =
-        remember {
+        remember(context) {
             ConversationRepository(
                 openAIService,
-                messageDao
+                messageDao,
+                database.conversationDao()
             )
         }
 

@@ -1,6 +1,5 @@
 package com.adelforce.psychoai.data.local
 
-
 import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.Query
@@ -18,9 +17,14 @@ interface MessageDao {
 
 
     @Query(
-        "SELECT * FROM messages ORDER BY timestamp ASC"
+        """
+        SELECT * FROM messages
+        WHERE conversationId = :conversationId
+        ORDER BY timestamp ASC
+        """
     )
-    fun getAll():
-            Flow<List<MessageEntity>>
+    fun getMessagesForConversation(
+        conversationId: Long
+    ): Flow<List<MessageEntity>>
 
 }

@@ -1,17 +1,38 @@
 package com.adelforce.psychoai.repository
 
 import com.adelforce.psychoai.ai.OpenAIService
+import com.adelforce.psychoai.data.local.ConversationDao
+import com.adelforce.psychoai.data.local.ConversationEntity
 import com.adelforce.psychoai.data.local.MessageDao
 import com.adelforce.psychoai.data.local.MessageEntity
 
 
 class ConversationRepository(
     private val openAIService: OpenAIService,
-    private val messageDao: MessageDao
+    private val messageDao: MessageDao,
+    private val conversationDao: ConversationDao
 ) {
 
-    suspend fun saveMessage(message: MessageEntity) {
-        messageDao.insert(message)
+    private var activeConversationId: Long? = null
+
+
+    suspend fun getActiveConversationId(): Long {
+
+        if (activeConversationId == null) {
+
+            activeConversationId =
+                conversationDao.insert(
+                    ConversationEntity(
+                        createdAt = System.currentTimeMillis()
+                    )
+                )
+
+            println(
+                "NEW CONVERSATION ID = $activeConversationId"
+            )
+        }
+
+        return activeConversationId!!
     }
 
 
@@ -19,36 +40,34 @@ class ConversationRepository(
         text: String
     ): String {
 
-        println("REPOSITORY: inserting USER message")
+        val conversationId =
+            getActiveConversationId()
+
 
         messageDao.insert(
             MessageEntity(
-                id = System.currentTimeMillis(),
+                conversationId = conversationId,
                 role = "USER",
                 text = text,
                 timestamp = System.currentTimeMillis()
             )
         )
 
-        println("REPOSITORY: USER inserted")
 
         val response =
             openAIService.askAI(text)
 
-        println("REPOSITORY: ASSISTANT inserted")
 
         messageDao.insert(
             MessageEntity(
-                id = System.currentTimeMillis(),
+                conversationId = conversationId,
                 role = "ASSISTANT",
                 text = response,
                 timestamp = System.currentTimeMillis()
             )
         )
 
-        println("REPOSITORY: ASSISTANT inserted")
 
         return response
     }
-
 }
