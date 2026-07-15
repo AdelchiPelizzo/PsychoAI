@@ -27,4 +27,16 @@ interface MessageDao {
         conversationId: Long
     ): Flow<List<MessageEntity>>
 
+    @Query(
+        """
+    SELECT * FROM messages
+    WHERE conversationId = :conversationId
+    ORDER BY timestamp DESC
+    LIMIT 1
+    """
+    )
+    suspend fun getLastMessage(
+        conversationId: Long
+    ): MessageEntity?
+
 }

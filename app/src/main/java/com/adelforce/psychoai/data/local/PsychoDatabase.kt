@@ -9,7 +9,7 @@ import androidx.room.RoomDatabase
         MessageEntity::class,
         ConversationEntity::class
     ],
-    version = 1
+    version = 2
 )
 abstract class PsychoDatabase :
     RoomDatabase() {

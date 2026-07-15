@@ -13,5 +13,9 @@ data class ConversationEntity(
 
     val createdAt: Long,
 
+    val lastActivityAt: Long,
+
+    val status: String = "ACTIVE",
+
     val title: String? = null
 )

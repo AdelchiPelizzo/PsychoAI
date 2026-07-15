@@ -5,6 +5,7 @@ import com.adelforce.psychoai.data.local.ConversationDao
 import com.adelforce.psychoai.data.local.ConversationEntity
 import com.adelforce.psychoai.data.local.MessageDao
 import com.adelforce.psychoai.data.local.MessageEntity
+import com.adelforce.psychoai.util.ConversationConfig
 
 
 class ConversationRepository(
@@ -13,61 +14,196 @@ class ConversationRepository(
     private val conversationDao: ConversationDao
 ) {
 
-    private var activeConversationId: Long? = null
+
+    private var currentConversationId: Long? = null
 
 
-    suspend fun getActiveConversationId(): Long {
 
-        if (activeConversationId == null) {
+    suspend fun getOrCreateConversation(): Long {
 
-            activeConversationId =
-                conversationDao.insert(
-                    ConversationEntity(
-                        createdAt = System.currentTimeMillis()
-                    )
+
+        val activeConversation =
+            conversationDao.getActiveConversation()
+
+
+
+        if (activeConversation != null) {
+
+
+            val now =
+                System.currentTimeMillis()
+
+
+            val inactiveTime =
+                now - activeConversation.lastActivityAt
+
+
+
+            if (inactiveTime < ConversationConfig.inactivityTimeoutMillis) {
+
+
+                currentConversationId =
+                    activeConversation.id
+
+
+
+                println(
+                    "CONTINUING CONVERSATION ${activeConversation.id}"
                 )
 
-            println(
-                "NEW CONVERSATION ID = $activeConversationId"
+
+                return activeConversation.id
+
+            }
+
+
+
+            conversationDao.closeConversation(
+                activeConversation.id
             )
+
+
+
+            println(
+                "CLOSED STALE CONVERSATION ${activeConversation.id}"
+            )
+
         }
 
-        return activeConversationId!!
+
+
+
+        val now =
+            System.currentTimeMillis()
+
+
+
+        val newConversationId =
+            conversationDao.insert(
+                ConversationEntity(
+                    createdAt = now,
+                    lastActivityAt = now
+                )
+            )
+
+
+
+        currentConversationId =
+            newConversationId
+
+
+
+        println(
+            "NEW CONVERSATION CREATED = $newConversationId"
+        )
+
+
+
+        return newConversationId
+
     }
 
 
+
+
+
     suspend fun sendMessage(
-        text: String
+        text: String,
+        conversationId: Long
     ): String {
 
-        val conversationId =
-            getActiveConversationId()
 
+
+        val now =
+            System.currentTimeMillis()
+
+
+
+        // USER MESSAGE
 
         messageDao.insert(
+
             MessageEntity(
+
                 conversationId = conversationId,
+
                 role = "USER",
+
                 text = text,
-                timestamp = System.currentTimeMillis()
+
+                timestamp = now
+
             )
+
         )
 
+
+
+        conversationDao.updateLastActivity(
+
+            conversationId,
+
+            now
+
+        )
+
+
+
+
+        // AI RESPONSE
 
         val response =
             openAIService.askAI(text)
 
 
+
+
+        val responseTime =
+            System.currentTimeMillis()
+
+
+
         messageDao.insert(
+
             MessageEntity(
+
                 conversationId = conversationId,
+
                 role = "ASSISTANT",
+
                 text = response,
-                timestamp = System.currentTimeMillis()
+
+                timestamp = responseTime
+
             )
+
         )
 
 
+
+        conversationDao.updateLastActivity(
+
+            conversationId,
+
+            responseTime
+
+        )
+        println(
+            "REPOSITORY: ASSISTANT inserted"
+        )
         return response
+
     }
+
+    suspend fun getCurrentConversationId(): Long? {
+        return conversationDao
+            .getActiveConversation()
+            ?.id
+    }
+
+    fun getCurrentConversationIdImmediate(): Long? {
+        return currentConversationId
+    }
+
+
 }

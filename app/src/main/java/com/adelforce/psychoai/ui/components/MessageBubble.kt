@@ -35,7 +35,6 @@ fun MessageBubble(
         verticalAlignment = Alignment.CenterVertically
     ) {
 
-
         Card(
             shape = RoundedCornerShape(16.dp),
             colors = CardDefaults.cardColors(
@@ -49,6 +48,7 @@ fun MessageBubble(
 
             Text(
                 text = message.text,
+                color = androidx.compose.ui.graphics.Color.Black,
                 modifier = Modifier.padding(
                     horizontal = 16.dp,
                     vertical = 10.dp

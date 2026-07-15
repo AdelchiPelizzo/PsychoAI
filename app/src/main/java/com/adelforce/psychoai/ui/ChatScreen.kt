@@ -14,38 +14,31 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.ui.platform.LocalContext
 import com.adelforce.psychoai.ui.components.MessageBubble
 import com.adelforce.psychoai.ai.OpenAIService
 import com.adelforce.psychoai.repository.ConversationRepository
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.runtime.remember
 import com.adelforce.psychoai.data.local.DatabaseProvider
 
 @Composable
 fun ChatScreen() {
 
-
-
     val context = LocalContext.current
-
 
     val database =
         remember {
             DatabaseProvider.getDatabase(context)
         }
 
-    val messageDao = database.messageDao()
+    val messageDao =
+        database.messageDao()
 
     val openAIService =
         remember {
@@ -53,7 +46,7 @@ fun ChatScreen() {
         }
 
     val repository =
-        remember(context) {
+        remember {
             ConversationRepository(
                 openAIService,
                 messageDao,
@@ -73,21 +66,31 @@ fun ChatScreen() {
             factory = factory
         )
 
-
     val isLoading by viewModel.isLoading.collectAsState()
-    val listState = rememberLazyListState()
+
+    val conversationId by viewModel.conversationId.collectAsState()
+
+    val listState =
+        rememberLazyListState()
+
     val messages by viewModel.messages.collectAsState()
+
+    LaunchedEffect(conversationId) {
+
+        listState.scrollToItem(0)
+
+    }
 
     LaunchedEffect(messages.size) {
 
         if (messages.isNotEmpty()) {
 
+            kotlinx.coroutines.delay(300)
+
             listState.animateScrollToItem(
                 messages.size - 1
             )
-
         }
-
     }
 
     var message by remember {
@@ -106,12 +109,14 @@ fun ChatScreen() {
                 )
             )
     ) {
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center,
@@ -129,29 +134,22 @@ fun ChatScreen() {
                         text = stringResource(R.string.chat_title),
                         style = MaterialTheme.typography.bodyMedium
                     )
-
                 }
-
 
                 Spacer(
                     modifier = Modifier.width(16.dp)
                 )
-
 
                 Image(
                     painter = painterResource(R.drawable.psyche_logo),
                     contentDescription = null,
                     modifier = Modifier.size(72.dp)
                 )
-
             }
 
             Spacer(
                 modifier = Modifier.height(12.dp)
             )
-
-
-            // Conversation area
 
             Card(
                 modifier = Modifier
@@ -169,38 +167,37 @@ fun ChatScreen() {
                         .padding(16.dp)
                 ) {
 
-                    LazyColumn(
-                        modifier = Modifier.fillMaxSize(),
-                        state = listState
-                    ) {
-                        if (isLoading) {
-                            item {
-                                Text(
-                                    text = "PsychoAI is thinking..."
+                    key(conversationId) {
+
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize(),
+                            state = listState
+                        ) {
+
+                            if (isLoading) {
+
+                                item {
+
+                                    Text(
+                                        text = "PsychoAI is thinking..."
+                                    )
+                                }
+                            }
+
+                            items(messages) { message ->
+
+                                MessageBubble(
+                                    message = message
                                 )
                             }
                         }
-
-                        items(messages) { message ->
-
-                            MessageBubble(
-                                message = message
-                            )
-
-                        }
-
                     }
-
                 }
             }
-
 
             Spacer(
                 modifier = Modifier.height(16.dp)
             )
-
-
-            // Input area
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -214,18 +211,21 @@ fun ChatScreen() {
                     },
                     modifier = Modifier.weight(1f),
                     placeholder = {
-                        Text(stringResource(R.string.enter_thought))
+                        Text(
+                            stringResource(R.string.enter_thought)
+                        )
                     }
                 )
-
 
                 IconButton(
                     onClick = {
 
-                        viewModel.sendMessage(message.text)
+                        viewModel.sendMessage(
+                            message.text
+                        )
 
-                        message = TextFieldValue("")
-
+                        message =
+                            TextFieldValue("")
                     }
                 ) {
 
@@ -233,11 +233,8 @@ fun ChatScreen() {
                         imageVector = Icons.Default.Send,
                         contentDescription = "Send"
                     )
-
                 }
             }
         }
-
     }
-
 }
