@@ -28,7 +28,6 @@ class ChatViewModel(
     private val messageDao: MessageDao,
     private val context: Context,
 ) : ViewModel() {
-
     private var screenWipeJob: Job? = null
 
     private val _conversationId =
@@ -44,58 +43,102 @@ class ChatViewModel(
         MutableStateFlow(false)
 
     init {
+
         println("CHAT VIEWMODEL CREATED")
 
         viewModelScope.launch {
+
             val id =
-                repository.getOrCreateConversation()
+                repository.getCurrentConversationId()
 
-            _conversationId.value = id
+            if (id != null) {
 
-            println(
-                "ACTIVE CONVERSATION ID = $id"
-            )
-        }
+                val lastMessage =
+                    messageDao.getLastMessage(id)
 
-        viewModelScope.launch {
-            _conversationId
-                .filterNotNull()
-                .collect { id ->
+                if (lastMessage != null) {
+
+                    val age =
+                        System.currentTimeMillis() -
+                                lastMessage.timestamp
+
+
+                    if (age < ConversationConfig.chatScreenTimeoutMillis) {
+
+                        println(
+                            "CONTINUING ACTIVE CONVERSATION $id"
+                        )
+
+                        _conversationId.value = id
+
+                        startScreenWipeMonitor(id)
+
+                    } else {
+
+                        println(
+                            "STALE CONVERSATION ON APP RELOAD - KEEPING SCREEN BLANK"
+                        )
+
+                        /*
+                           Important:
+                           - Do not set conversationId
+                           - Do not load messages
+                           - Do not show welcome message
+                           - Do not start monitor
+
+                           The next user message will call
+                           repository.getOrCreateConversation()
+                        */
+
+                        _hideDatabaseMessages.value = true
+                    }
+
+                } else {
+
+                    println(
+                        "EMPTY ACTIVE CONVERSATION $id"
+                    )
+
+                    _conversationId.value = id
+
                     startScreenWipeMonitor(id)
                 }
+
+            } else {
+
+                println(
+                    "NO ACTIVE CONVERSATION"
+                )
+
+            }
         }
     }
 
-    private fun startScreenWipeMonitor(
-        conversationId: Long
-    ) {
+    private fun startScreenWipeMonitor(conversationId: Long) {
         screenWipeJob?.cancel()
 
         screenWipeJob =
             viewModelScope.launch {
-
                 while (isActive) {
-
                     delay(10000L)
 
                     val lastMessage =
                         messageDao.getLastMessage(
-                            conversationId
+                            conversationId,
                         )
 
                     if (lastMessage != null) {
-
                         val age =
                             System.currentTimeMillis() -
                                     lastMessage.timestamp
 
                         if (age >= ConversationConfig.chatScreenTimeoutMillis) {
-
                             println(
-                                "SCREEN WIPE TRIGGERED"
+                                "SCREEN WIPE TRIGGERED",
                             )
 
-                            _hideDatabaseMessages.value = true
+                            _hideDatabaseMessages.value =
+                                true
 
                             _temporaryMessages.value =
                                 listOf(
@@ -107,8 +150,8 @@ class ChatViewModel(
                                         role =
                                             Role.ASSISTANT,
                                         timestamp =
-                                            System.currentTimeMillis()
-                                    )
+                                            System.currentTimeMillis(),
+                                    ),
                                 )
 
                             break
@@ -119,12 +162,13 @@ class ChatViewModel(
     }
 
     val messages: StateFlow<List<Message>> =
+
         _conversationId
             .filterNotNull()
             .flatMapLatest { id ->
 
                 println(
-                    "LOADING MESSAGES FOR CONVERSATION ID = $id"
+                    "LOADING MESSAGES FOR CONVERSATION ID = $id",
                 )
 
                 messageDao
@@ -132,21 +176,16 @@ class ChatViewModel(
                     .onEach { messages ->
 
                         println(
-                            "FLOW RECEIVED ${messages.size} MESSAGES FOR CONVERSATION $id"
+                            "FLOW RECEIVED ${messages.size} MESSAGES FOR CONVERSATION $id",
                         )
-
                     }
-
-            }
-            .combine(
-                _temporaryMessages
+            }.combine(
+                _temporaryMessages,
             ) { databaseMessages, temporaryMessages ->
 
                 databaseMessages to temporaryMessages
-
-            }
-            .combine(
-                _hideDatabaseMessages
+            }.combine(
+                _hideDatabaseMessages,
             ) { pair, hideDatabaseMessages ->
 
                 val databaseMessages =
@@ -159,29 +198,32 @@ class ChatViewModel(
                     databaseMessages.map { entity ->
 
                         Message(
-                            id = entity.id,
-                            text = entity.text,
+                            id =
+                                entity.id,
+                            text =
+                                entity.text,
                             role =
-                                if (entity.role == "USER")
+                                if (entity.role == "USER") {
                                     Role.USER
-                                else
-                                    Role.ASSISTANT,
-                            timestamp = entity.timestamp
+                                } else {
+                                    Role.ASSISTANT
+                                },
+                            timestamp =
+                                entity.timestamp,
                         )
-
                     }
 
                 if (hideDatabaseMessages) {
+
                     temporaryMessages
                 } else {
+
                     savedMessages + temporaryMessages
                 }
-
-            }
-            .stateIn(
+            }.stateIn(
                 viewModelScope,
                 SharingStarted.WhileSubscribed(5000),
-                emptyList()
+                emptyList(),
             )
 
     private val _isLoading =
@@ -190,10 +232,7 @@ class ChatViewModel(
     val isLoading: StateFlow<Boolean> =
         _isLoading
 
-    fun sendMessage(
-        text: String
-    ) {
-
+    fun sendMessage(text: String) {
         if (text.isBlank()) {
             return
         }
@@ -202,21 +241,12 @@ class ChatViewModel(
             return
         }
 
-        println(
-            "CHECKING INTERNET"
-        )
-
         val internetAvailable =
             NetworkUtils.isInternetAvailable(context)
 
-        println(
-            "INTERNET AVAILABLE = $internetAvailable"
-        )
-
         if (!internetAvailable) {
-
             showTemporaryError(
-                "No internet connection. Please check your network."
+                "No internet connection. Please check your network.",
             )
 
             return
@@ -225,69 +255,80 @@ class ChatViewModel(
         _isLoading.value = true
 
         viewModelScope.launch {
-
             try {
-
                 println(
-                    "BEFORE sendMessage()"
+                    "BEFORE sendMessage()",
                 )
 
-                _hideDatabaseMessages.value = true
-
                 _temporaryMessages.value =
-                    emptyList()
+                    listOf(
+                        Message(
+                            id =
+                                System.currentTimeMillis(),
+                            text =
+                                text,
+                            role =
+                                Role.USER,
+                            timestamp =
+                                System.currentTimeMillis(),
+                        ),
+                    )
+
+                _hideDatabaseMessages.value =
+                    true
+
+                /*
+                    This is now the ONLY place
+                    where a conversation can be created.
+                 */
 
                 val conversationId =
                     repository.getOrCreateConversation()
 
                 println(
-                    "NEW ACTIVE ID = $conversationId"
+                    "ACTIVE CONVERSATION ID = $conversationId",
                 )
 
-                // switch UI immediately
                 _conversationId.value =
                     conversationId
 
-                delay(50)
+                startScreenWipeMonitor(conversationId)
 
                 repository.sendMessage(
                     text,
-                    conversationId
+                    conversationId,
                 )
 
-                println(
-                    "CURRENT ID = $conversationId"
-                )
+                delay(100)
 
                 _hideDatabaseMessages.value =
                     false
 
+                _conversationId.value =
+                    conversationId
+
+                _temporaryMessages.value =
+                    emptyList()
+
                 println(
-                    "AFTER sendMessage()"
+                    "AFTER sendMessage()",
                 )
-
             } catch (e: Exception) {
-
                 println(
-                    "CHAT ERROR: ${e.javaClass.name} - ${e.message}"
+                    "CHAT ERROR: ${e.javaClass.name} - ${e.message}",
                 )
 
                 showTemporaryError(
-                    "Something went wrong: ${e.message}"
+                    "Something went wrong: ${e.message}",
                 )
-
             } finally {
-
-                _isLoading.value = false
-
+                _isLoading.value =
+                    false
             }
         }
     }
 
-    private fun showTemporaryError(
-        text: String
-    ) {
-
+    private fun showTemporaryError(text: String) {
         _temporaryMessages.value =
             listOf(
                 Message(
@@ -298,13 +339,12 @@ class ChatViewModel(
                     role =
                         Role.ASSISTANT,
                     timestamp =
-                        System.currentTimeMillis()
-                )
+                        System.currentTimeMillis(),
+                ),
             )
     }
 
     override fun onCleared() {
-
         super.onCleared()
 
         screenWipeJob?.cancel()
