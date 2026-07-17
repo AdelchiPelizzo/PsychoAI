@@ -26,6 +26,8 @@ import com.adelforce.psychoai.ui.components.MessageBubble
 import com.adelforce.psychoai.ai.OpenAIService
 import com.adelforce.psychoai.repository.ConversationRepository
 import com.adelforce.psychoai.data.local.DatabaseProvider
+import com.adelforce.psychoai.memory.ThemeExtractor
+import com.adelforce.psychoai.memory.ThemeRepository
 
 @Composable
 fun ChatScreen() {
@@ -48,9 +50,14 @@ fun ChatScreen() {
     val repository =
         remember {
             ConversationRepository(
-                openAIService,
-                messageDao,
-                database.conversationDao()
+                openAIService = openAIService,
+                messageDao = messageDao,
+                conversationDao = database.conversationDao(),
+                themeExtractor = ThemeExtractor(),
+                themeRepository = ThemeRepository(
+                    themeDao = database.themeDao(),
+                    messageThemeDao = database.messageThemeDao()
+                )
             )
         }
 

@@ -19,6 +19,7 @@ object DatabaseProvider {
                     PsychoDatabase::class.java,
                     "psycho_database"
                 )
+                    .fallbackToDestructiveMigration()
                     .build()
 
             INSTANCE = db

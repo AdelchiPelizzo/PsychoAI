@@ -5,12 +5,19 @@ import com.adelforce.psychoai.data.local.ConversationDao
 import com.adelforce.psychoai.data.local.ConversationEntity
 import com.adelforce.psychoai.data.local.MessageDao
 import com.adelforce.psychoai.data.local.MessageEntity
+import com.adelforce.psychoai.data.local.MessageThemeDao
 import com.adelforce.psychoai.util.ConversationConfig
+import com.adelforce.psychoai.memory.ThemeRepository
+import com.adelforce.psychoai.memory.ThemeExtractor
+import com.adelforce.psychoai.data.local.MessageThemeEntity
+
 
 class ConversationRepository(
     private val openAIService: OpenAIService,
     private val messageDao: MessageDao,
     private val conversationDao: ConversationDao,
+    private val themeExtractor: ThemeExtractor,
+    private val themeRepository: ThemeRepository,
 ) {
     private var currentConversationId: Long? = null
 
@@ -86,32 +93,44 @@ class ConversationRepository(
         text: String,
         conversationId: Long,
     ): String {
+
         val now =
             System.currentTimeMillis()
 
-        // USER MESSAGE
 
-        messageDao.insert(
-            MessageEntity(
-                conversationId = conversationId,
-                role = "USER",
-                text = text,
-                timestamp = now,
-            ),
+        val messageId =
+            messageDao.insert(
+                MessageEntity(
+                    conversationId = conversationId,
+                    role = "USER",
+                    text = text,
+                    timestamp = now
+                )
+            )
+
+
+        val themes =
+            themeExtractor.extractThemes(text)
+
+        themeRepository.saveThemesForMessage(
+            messageId,
+            themes
         )
+
 
         conversationDao.updateLastActivity(
             conversationId,
             now,
         )
 
-        // AI RESPONSE
 
         val response =
             openAIService.askAI(text)
 
+
         val responseTime =
             System.currentTimeMillis()
+
 
         messageDao.insert(
             MessageEntity(
@@ -122,13 +141,18 @@ class ConversationRepository(
             ),
         )
 
+
         conversationDao.updateLastActivity(
             conversationId,
             responseTime,
         )
+
+
         println(
             "REPOSITORY: ASSISTANT inserted",
         )
+
+
         return response
     }
 

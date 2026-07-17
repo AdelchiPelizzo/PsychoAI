@@ -13,7 +13,7 @@ interface MessageDao {
     @Insert
     suspend fun insert(
         message: MessageEntity
-    )
+    ): Long
 
 
     @Query(

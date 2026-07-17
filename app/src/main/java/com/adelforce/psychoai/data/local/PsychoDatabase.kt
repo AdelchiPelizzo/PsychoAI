@@ -7,9 +7,11 @@ import androidx.room.RoomDatabase
 @Database(
     entities = [
         MessageEntity::class,
-        ConversationEntity::class
+        ConversationEntity::class,
+        ThemeEntity::class,
+        MessageThemeEntity::class
     ],
-    version = 2
+    version = 3
 )
 abstract class PsychoDatabase :
     RoomDatabase() {
@@ -18,5 +20,9 @@ abstract class PsychoDatabase :
     abstract fun messageDao(): MessageDao
 
     abstract fun conversationDao(): ConversationDao
+
+    abstract fun themeDao(): ThemeDao
+
+    abstract fun messageThemeDao(): MessageThemeDao
 
 }
