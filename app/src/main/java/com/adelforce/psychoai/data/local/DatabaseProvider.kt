@@ -2,12 +2,12 @@ package com.adelforce.psychoai.data.local
 
 import android.content.Context
 import androidx.room.Room
+import com.adelforce.psychoai.data.local.migrations.DatabaseMigrations
 
 object DatabaseProvider {
 
     @Volatile
     private var INSTANCE: PsychoDatabase? = null
-
 
     fun getDatabase(context: Context): PsychoDatabase {
 
@@ -19,7 +19,9 @@ object DatabaseProvider {
                     PsychoDatabase::class.java,
                     "psycho_database"
                 )
-                    .fallbackToDestructiveMigration()
+                    .addMigrations(
+                        DatabaseMigrations.MIGRATION_2_3
+                    )
                     .build()
 
             INSTANCE = db

@@ -94,6 +94,8 @@ dependencies {
     implementation("androidx.room:room-runtime:2.8.0")
     implementation("androidx.room:room-ktx:2.8.0")
 
+    implementation("androidx.sqlite:sqlite-framework:2.5.0")
+
     ksp("androidx.room:room-compiler:2.8.0")
 
     testImplementation(libs.junit)

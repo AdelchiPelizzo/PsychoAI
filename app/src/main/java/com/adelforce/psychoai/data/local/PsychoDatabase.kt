@@ -13,9 +13,7 @@ import androidx.room.RoomDatabase
     ],
     version = 3
 )
-abstract class PsychoDatabase :
-    RoomDatabase() {
-
+abstract class PsychoDatabase : RoomDatabase() {
 
     abstract fun messageDao(): MessageDao
 
@@ -24,5 +22,4 @@ abstract class PsychoDatabase :
     abstract fun themeDao(): ThemeDao
 
     abstract fun messageThemeDao(): MessageThemeDao
-
 }
