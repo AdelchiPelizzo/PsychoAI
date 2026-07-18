@@ -28,6 +28,9 @@ import com.adelforce.psychoai.repository.ConversationRepository
 import com.adelforce.psychoai.data.local.DatabaseProvider
 import com.adelforce.psychoai.memory.ThemeExtractor
 import com.adelforce.psychoai.memory.ThemeRepository
+import com.adelforce.psychoai.memory.MemoryRetriever
+import com.adelforce.psychoai.memory.UserMemoryManager
+import com.adelforce.psychoai.prompt.PromptBuilder
 
 @Composable
 fun ChatScreen() {
@@ -49,17 +52,61 @@ fun ChatScreen() {
 
     val repository =
         remember {
+
             ConversationRepository(
+
                 openAIService = openAIService,
+
                 messageDao = messageDao,
-                conversationDao = database.conversationDao(),
-                themeExtractor = ThemeExtractor(),
-                themeRepository = ThemeRepository(
-                    themeDao = database.themeDao(),
-                    messageThemeDao = database.messageThemeDao()
-                )
+
+                conversationDao =
+                    database.conversationDao(),
+
+                themeExtractor =
+                    ThemeExtractor(),
+
+                themeRepository =
+                    ThemeRepository(
+                        themeDao = database.themeDao(),
+                        messageThemeDao =
+                            database.messageThemeDao()
+                    ),
+
+                messageThemeDao =
+                    database.messageThemeDao(),
+
+                memoryRetriever =
+                    MemoryRetriever(),
+
+                promptBuilder =
+                    PromptBuilder(
+                        userMemoryDao =
+                            database.userMemoryDao()
+                    ),
+
+                userMemoryManager =
+                    UserMemoryManager(
+                        openAIService = openAIService,
+                        messageDao = messageDao,
+                        userMemoryDao =
+                            database.userMemoryDao()
+                    )
             )
         }
+
+    val userMemoryManager =
+        remember {
+            UserMemoryManager(
+                openAIService = openAIService,
+                messageDao = messageDao,
+                userMemoryDao = database.userMemoryDao()
+            )
+        }
+
+
+    LaunchedEffect(Unit) {
+        userMemoryManager.initializeMemoryIfNeeded()
+    }
 
     val factory =
         ChatViewModelFactory(

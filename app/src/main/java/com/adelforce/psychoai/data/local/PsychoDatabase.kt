@@ -8,10 +8,11 @@ import androidx.room.RoomDatabase
     entities = [
         MessageEntity::class,
         ConversationEntity::class,
+        MessageThemeEntity::class,
         ThemeEntity::class,
-        MessageThemeEntity::class
+        UserMemoryEntity::class
     ],
-    version = 3
+    version = 5
 )
 abstract class PsychoDatabase : RoomDatabase() {
 
@@ -22,4 +23,6 @@ abstract class PsychoDatabase : RoomDatabase() {
     abstract fun themeDao(): ThemeDao
 
     abstract fun messageThemeDao(): MessageThemeDao
+
+    abstract fun userMemoryDao(): UserMemoryDao
 }

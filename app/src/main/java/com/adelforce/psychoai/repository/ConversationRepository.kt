@@ -10,18 +10,38 @@ import com.adelforce.psychoai.util.ConversationConfig
 import com.adelforce.psychoai.memory.ThemeRepository
 import com.adelforce.psychoai.memory.ThemeExtractor
 import com.adelforce.psychoai.data.local.MessageThemeEntity
+import com.adelforce.psychoai.memory.MemoryRetriever
+import com.adelforce.psychoai.memory.UserMemoryManager
+import com.adelforce.psychoai.prompt.PromptBuilder
 
 
 class ConversationRepository(
+
     private val openAIService: OpenAIService,
+
     private val messageDao: MessageDao,
+
     private val conversationDao: ConversationDao,
+
     private val themeExtractor: ThemeExtractor,
+
     private val themeRepository: ThemeRepository,
+
+    private val messageThemeDao: MessageThemeDao,
+
+    private val memoryRetriever: MemoryRetriever,
+
+    private val promptBuilder: PromptBuilder,
+
+    private val userMemoryManager: UserMemoryManager
+
 ) {
     private var currentConversationId: Long? = null
 
     suspend fun getOrCreateConversation(): Long {
+
+        userMemoryManager.initializeMemoryIfNeeded()
+
         val activeConversation =
             conversationDao.getActiveConversation()
 
@@ -109,6 +129,10 @@ class ConversationRepository(
             )
 
 
+        // TEST ONLY
+        userMemoryManager.updateMemory()
+
+
         val themes =
             themeExtractor.extractThemes(text)
 
@@ -124,8 +148,18 @@ class ConversationRepository(
         )
 
 
+        val memoryContext =
+            memoryRetriever.buildContext(text)
+
+
+        val prompt =
+            promptBuilder.build(
+                memoryContext,
+                text
+            )
+
         val response =
-            openAIService.askAI(text)
+            openAIService.askAI(prompt)
 
 
         val responseTime =

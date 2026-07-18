@@ -1,5 +1,6 @@
 package com.adelforce.psychoai.ai
 
+import android.util.Log
 import com.adelforce.psychoai.BuildConfig
 
 
@@ -21,8 +22,10 @@ class OpenAIService {
         message: String
     ): String {
 
-
-        println("OPENAI REQUEST: $message")
+        Log.d(
+            "OpenAIService",
+            "Sending prompt: $message"
+        )
 
         println(
             "KEY LENGTH = ${BuildConfig.OPENAI_API_KEY.length}"

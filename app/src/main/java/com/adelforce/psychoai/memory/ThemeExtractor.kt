@@ -14,11 +14,14 @@ class ThemeExtractor {
 
         ThemeDictionary.themes.forEach { (theme, keywords) ->
 
+            val words =
+                text
+                    .replace(Regex("[^a-z ]"), "")
+                    .split(" ")
+
             val found =
                 keywords.any { keyword ->
-
-                    text.contains(keyword)
-
+                    words.contains(keyword)
                 }
 
             if (found) {
