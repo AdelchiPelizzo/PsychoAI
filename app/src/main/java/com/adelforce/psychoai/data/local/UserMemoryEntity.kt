@@ -1,5 +1,6 @@
 package com.adelforce.psychoai.data.local
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
@@ -15,5 +16,6 @@ data class UserMemoryEntity(
 
     val sourceMessageCount: Int,
 
+    @ColumnInfo(name = "lastProcessedMessageId")
     val lastProcessedMessageId: Long
 )

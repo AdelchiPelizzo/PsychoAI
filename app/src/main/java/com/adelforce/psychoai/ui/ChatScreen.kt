@@ -29,6 +29,7 @@ import com.adelforce.psychoai.data.local.DatabaseProvider
 import com.adelforce.psychoai.memory.ThemeExtractor
 import com.adelforce.psychoai.memory.ThemeRepository
 import com.adelforce.psychoai.memory.MemoryRetriever
+import com.adelforce.psychoai.memory.MemorySynthesizer
 import com.adelforce.psychoai.memory.UserMemoryManager
 import com.adelforce.psychoai.prompt.PromptBuilder
 
@@ -86,10 +87,11 @@ fun ChatScreen() {
 
                 userMemoryManager =
                     UserMemoryManager(
-                        openAIService = openAIService,
+                        synthesizer = MemorySynthesizer(
+                            openAIService = openAIService
+                        ),
                         messageDao = messageDao,
-                        userMemoryDao =
-                            database.userMemoryDao()
+                        userMemoryDao = database.userMemoryDao()
                     )
             )
         }
@@ -97,12 +99,13 @@ fun ChatScreen() {
     val userMemoryManager =
         remember {
             UserMemoryManager(
-                openAIService = openAIService,
+                synthesizer = MemorySynthesizer(
+                    openAIService = openAIService
+                ),
                 messageDao = messageDao,
                 userMemoryDao = database.userMemoryDao()
             )
         }
-
 
     LaunchedEffect(Unit) {
         userMemoryManager.initializeMemoryIfNeeded()

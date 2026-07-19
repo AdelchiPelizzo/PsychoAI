@@ -15,7 +15,6 @@ interface MessageDao {
         message: MessageEntity
     ): Long
 
-
     @Query(
         """
         SELECT * FROM messages
@@ -38,5 +37,28 @@ interface MessageDao {
     suspend fun getLastMessage(
         conversationId: Long
     ): MessageEntity?
+
+    @Query(
+        """
+    SELECT *
+    FROM messages
+    WHERE id > :lastProcessedMessageId
+      AND role = 'USER'
+    ORDER BY id ASC
+    """
+    )
+    suspend fun getUserMessagesAfter(
+        lastProcessedMessageId: Long
+    ): List<MessageEntity>
+
+    @Query(
+        """
+    SELECT COUNT(*)
+    FROM messages
+    """
+    )
+    suspend fun countMessages(): Int
+
+
 
 }

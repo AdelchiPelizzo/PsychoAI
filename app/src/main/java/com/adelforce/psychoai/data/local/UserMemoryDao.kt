@@ -31,17 +31,20 @@ interface UserMemoryDao {
 
     @Query(
         """
-        UPDATE user_memory
-        SET summary = :summary,
-            updatedAt = :updatedAt,
-            sourceMessageCount = :sourceMessageCount
-        WHERE id = 1
-        """
+    UPDATE user_memory
+    SET 
+        summary = :summary,
+        updatedAt = :updatedAt,
+        sourceMessageCount = :sourceMessageCount,
+        lastProcessedMessageId = :lastProcessedMessageId
+    WHERE id = 1
+    """
     )
     suspend fun updateMemory(
         summary: String,
         updatedAt: Long,
-        sourceMessageCount: Int
+        sourceMessageCount: Int,
+        lastProcessedMessageId: Long
     )
 
 
