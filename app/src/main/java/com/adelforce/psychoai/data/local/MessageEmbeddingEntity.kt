@@ -15,5 +15,7 @@ data class MessageEmbeddingEntity(
 
     val embedding: String,
 
-    val createdAt: Long
+    val createdAt: Long,
+
+    val conversationId: Long
 )

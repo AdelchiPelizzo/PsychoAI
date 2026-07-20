@@ -65,7 +65,7 @@ class MemoryRetriever(
 //        Milvus
 
         val storedEmbeddings =
-            messageEmbeddingDao.getAll()
+            messageEmbeddingDao.getAllExceptCurrent(currentMessageId)
 
         Log.d(
             "MemoryRetriever",
@@ -76,6 +76,11 @@ class MemoryRetriever(
             mutableListOf<Pair<Long, Float>>()
 
         for (item in storedEmbeddings) {
+
+            Log.d(
+                "MemoryRetriever",
+                "Embedding messageId=${item.messageId}, current=$currentMessageId"
+            )
 
             if (item.messageId == currentMessageId) {
                 continue
@@ -131,7 +136,7 @@ class MemoryRetriever(
 
         val topMatches =
             matches
-                .filter { it.second > 0.35f }
+                .filter { it.second > 0.25f }
                 .sortedByDescending { it.second }
                 .take(3)
 

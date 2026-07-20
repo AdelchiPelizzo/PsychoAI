@@ -19,6 +19,26 @@ interface MessageEmbeddingDao {
     )
     suspend fun getAll(): List<MessageEmbeddingEntity>
 
+    @Query("""
+        SELECT *
+        FROM message_embeddings
+        WHERE conversationId = :conversationId
+        """
+    )
+    suspend fun getForConversation(
+        conversationId: Long
+    ): List<MessageEmbeddingEntity>
+
+    @Query("""
+        SELECT *
+        FROM message_embeddings
+        WHERE messageId != :currentMessageId
+        """
+    )
+    suspend fun getAllExceptCurrent(
+        currentMessageId: Long
+    ): List<MessageEmbeddingEntity>
+
     @Query(
         """
         SELECT * FROM message_embeddings
@@ -28,4 +48,6 @@ interface MessageEmbeddingDao {
     suspend fun getForMessage(
         messageId: Long
     ): MessageEmbeddingEntity?
+
+
 }

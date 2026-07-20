@@ -140,15 +140,6 @@ class ConversationRepository(
             "Embedding size = ${embedding.size}"
         )
 
-        messageEmbeddingDao.insert(
-            MessageEmbeddingEntity(
-                messageId = messageId,
-                embedding =
-                    Json.encodeToString(embedding),
-                createdAt = now
-            )
-        )
-
 
         // TEST ONLY to be run separately at intervals
         userMemoryManager.updateMemory()
@@ -175,6 +166,15 @@ class ConversationRepository(
                 userMessage = text,
                 currentEmbedding = embedding
             )
+
+        messageEmbeddingDao.insert(
+            MessageEmbeddingEntity(
+                messageId = messageId,
+                conversationId = conversationId,
+                embedding = Json.encodeToString(embedding),
+                createdAt = now
+            )
+        )
 
         val prompt =
             promptBuilder.build(
