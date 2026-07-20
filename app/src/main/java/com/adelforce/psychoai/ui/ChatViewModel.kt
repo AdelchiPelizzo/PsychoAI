@@ -164,27 +164,37 @@ class ChatViewModel(
     val messages: StateFlow<List<Message>> =
 
         _conversationId
-            .filterNotNull()
             .flatMapLatest { id ->
 
-                println(
-                    "LOADING MESSAGES FOR CONVERSATION ID = $id",
-                )
+                if (id == null) {
 
-                messageDao
-                    .getMessagesForConversation(id)
-                    .onEach { messages ->
+                    kotlinx.coroutines.flow.flowOf(
+                        emptyList()
+                    )
 
-                        println(
-                            "FLOW RECEIVED ${messages.size} MESSAGES FOR CONVERSATION $id",
-                        )
-                    }
-            }.combine(
+                } else {
+
+                    println(
+                        "LOADING MESSAGES FOR CONVERSATION ID = $id",
+                    )
+
+                    messageDao
+                        .getMessagesForConversation(id)
+                        .onEach { messages ->
+
+                            println(
+                                "FLOW RECEIVED ${messages.size} MESSAGES FOR CONVERSATION $id",
+                            )
+                        }
+                }
+            }
+            .combine(
                 _temporaryMessages,
             ) { databaseMessages, temporaryMessages ->
 
                 databaseMessages to temporaryMessages
-            }.combine(
+            }
+            .combine(
                 _hideDatabaseMessages,
             ) { pair, hideDatabaseMessages ->
 
@@ -194,33 +204,41 @@ class ChatViewModel(
                 val temporaryMessages =
                     pair.second
 
+
                 val savedMessages =
                     databaseMessages.map { entity ->
 
                         Message(
                             id =
                                 entity.id,
+
                             text =
                                 entity.text,
+
                             role =
                                 if (entity.role == "USER") {
                                     Role.USER
                                 } else {
                                     Role.ASSISTANT
                                 },
+
                             timestamp =
                                 entity.timestamp,
                         )
                     }
 
+
                 if (hideDatabaseMessages) {
 
                     temporaryMessages
+
                 } else {
 
                     savedMessages + temporaryMessages
                 }
-            }.stateIn(
+
+            }
+            .stateIn(
                 viewModelScope,
                 SharingStarted.WhileSubscribed(5000),
                 emptyList(),
@@ -329,18 +347,17 @@ class ChatViewModel(
     }
 
     private fun showTemporaryError(text: String) {
+
+        println("SHOW ERROR MESSAGE: $text")
+
         _temporaryMessages.value =
             listOf(
                 Message(
-                    id =
-                        System.currentTimeMillis(),
-                    text =
-                        text,
-                    role =
-                        Role.ASSISTANT,
-                    timestamp =
-                        System.currentTimeMillis(),
-                ),
+                    id = System.currentTimeMillis(),
+                    text = text,
+                    role = Role.ASSISTANT,
+                    timestamp = System.currentTimeMillis(),
+                )
             )
     }
 

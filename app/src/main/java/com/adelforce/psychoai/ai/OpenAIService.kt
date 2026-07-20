@@ -16,6 +16,31 @@ class OpenAIService {
         println("API KEY LENGTH = ${apiKey.length}")
     }
 
+    suspend fun createEmbedding(
+        text: String
+    ): List<Float> {
+
+        val response =
+            api.createEmbedding(
+
+                authorization =
+                    "Bearer ${BuildConfig.OPENAI_API_KEY}",
+
+                request =
+                    EmbeddingRequest(
+
+                        model =
+                            "text-embedding-3-small",
+
+                        input = text
+                    )
+            )
+
+        return response
+            .data
+            .first()
+            .embedding
+    }
 
 
     suspend fun askAI(

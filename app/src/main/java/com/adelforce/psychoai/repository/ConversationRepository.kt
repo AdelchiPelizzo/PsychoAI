@@ -4,6 +4,8 @@ import com.adelforce.psychoai.ai.OpenAIService
 import com.adelforce.psychoai.data.local.ConversationDao
 import com.adelforce.psychoai.data.local.ConversationEntity
 import com.adelforce.psychoai.data.local.MessageDao
+import com.adelforce.psychoai.data.local.MessageEmbeddingDao
+import com.adelforce.psychoai.data.local.MessageEmbeddingEntity
 import com.adelforce.psychoai.data.local.MessageEntity
 import com.adelforce.psychoai.data.local.MessageThemeDao
 import com.adelforce.psychoai.util.ConversationConfig
@@ -13,7 +15,8 @@ import com.adelforce.psychoai.data.local.MessageThemeEntity
 import com.adelforce.psychoai.memory.MemoryRetriever
 import com.adelforce.psychoai.memory.UserMemoryManager
 import com.adelforce.psychoai.prompt.PromptBuilder
-
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 class ConversationRepository(
 
@@ -33,9 +36,11 @@ class ConversationRepository(
 
     private val promptBuilder: PromptBuilder,
 
-    private val userMemoryManager: UserMemoryManager
+    private val userMemoryManager: UserMemoryManager,
 
-) {
+    private val messageEmbeddingDao: MessageEmbeddingDao,
+
+    ) {
     private var currentConversationId: Long? = null
 
     suspend fun getOrCreateConversation(): Long {
@@ -128,8 +133,24 @@ class ConversationRepository(
                 )
             )
 
+        val embedding =
+            openAIService.createEmbedding(text)
 
-        // TEST ONLY
+        println(
+            "Embedding size = ${embedding.size}"
+        )
+
+        messageEmbeddingDao.insert(
+            MessageEmbeddingEntity(
+                messageId = messageId,
+                embedding =
+                    Json.encodeToString(embedding),
+                createdAt = now
+            )
+        )
+
+
+        // TEST ONLY to be run separately at intervals
         userMemoryManager.updateMemory()
 
 
@@ -147,10 +168,13 @@ class ConversationRepository(
             now,
         )
 
-
         val memoryContext =
-            memoryRetriever.buildContext(text)
-
+            memoryRetriever.buildContext(
+                conversationId = conversationId,
+                currentMessageId = messageId,
+                userMessage = text,
+                currentEmbedding = embedding
+            )
 
         val prompt =
             promptBuilder.build(

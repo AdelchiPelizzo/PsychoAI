@@ -20,4 +20,15 @@ interface OpenAIApi {
 
     ): ResponseResponse
 
+    @POST("v1/embeddings")
+    suspend fun createEmbedding(
+
+        @Header("Authorization")
+        authorization: String,
+
+        @Body
+        request: EmbeddingRequest
+
+    ): EmbeddingResponse
+
 }

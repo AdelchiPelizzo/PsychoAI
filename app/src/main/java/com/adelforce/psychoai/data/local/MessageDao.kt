@@ -59,6 +59,24 @@ interface MessageDao {
     )
     suspend fun countMessages(): Int
 
+    @Query(
+        """
+    SELECT * FROM messages
+    WHERE id = :id
+    """
+    )
+    suspend fun getById(
+        id: Long
+    ): MessageEntity?
 
+    @Query("""
+    SELECT COUNT(*)
+    FROM messages
+    WHERE id > :lastProcessedMessageId
+    AND role = 'USER'
+    """)
+    suspend fun countMessagesAfter(
+        lastProcessedMessageId: Long
+    ): Int
 
 }

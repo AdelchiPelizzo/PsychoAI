@@ -51,12 +51,27 @@ fun ChatScreen() {
             OpenAIService()
         }
 
+    val userMemoryManager =
+        remember {
+            UserMemoryManager(
+                synthesizer = MemorySynthesizer(
+                    openAIService = openAIService
+                ),
+                messageDao = messageDao,
+                userMemoryDao = database.userMemoryDao()
+            )
+        }
+
+
     val repository =
         remember {
 
             ConversationRepository(
 
                 openAIService = openAIService,
+
+                messageEmbeddingDao =
+                    database.messageEmbeddingDao(),
 
                 messageDao = messageDao,
 
@@ -77,7 +92,16 @@ fun ChatScreen() {
                     database.messageThemeDao(),
 
                 memoryRetriever =
-                    MemoryRetriever(),
+                    MemoryRetriever(
+
+                        messageEmbeddingDao =
+                            database.messageEmbeddingDao(),
+                        messageDao =
+                            database.messageDao(),
+                        themeDao =
+                            database.themeDao()
+
+                    ),
 
                 promptBuilder =
                     PromptBuilder(
@@ -85,25 +109,7 @@ fun ChatScreen() {
                             database.userMemoryDao()
                     ),
 
-                userMemoryManager =
-                    UserMemoryManager(
-                        synthesizer = MemorySynthesizer(
-                            openAIService = openAIService
-                        ),
-                        messageDao = messageDao,
-                        userMemoryDao = database.userMemoryDao()
-                    )
-            )
-        }
-
-    val userMemoryManager =
-        remember {
-            UserMemoryManager(
-                synthesizer = MemorySynthesizer(
-                    openAIService = openAIService
-                ),
-                messageDao = messageDao,
-                userMemoryDao = database.userMemoryDao()
+                userMemoryManager = userMemoryManager
             )
         }
 

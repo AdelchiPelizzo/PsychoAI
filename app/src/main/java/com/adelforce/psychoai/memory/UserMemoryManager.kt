@@ -3,6 +3,7 @@ package com.adelforce.psychoai.memory
 import com.adelforce.psychoai.data.local.UserMemoryDao
 import com.adelforce.psychoai.data.local.UserMemoryEntity
 import com.adelforce.psychoai.data.local.MessageDao
+import com.adelforce.psychoai.util.ConversationConfig
 
 
 class UserMemoryManager(
@@ -70,5 +71,19 @@ class UserMemoryManager(
             lastProcessedMessageId =
                 lastMessageId
         )
+    }
+
+    suspend fun shouldUpdateMemory(): Boolean {
+
+        val memory =
+            userMemoryDao.getMemory() ?: return false
+
+        val newMessageCount =
+            messageDao.countMessagesAfter(
+                memory.lastProcessedMessageId
+            )
+
+        return newMessageCount >=
+                ConversationConfig.MEMORY_MIN_MESSAGES_BEFORE_UPDATE
     }
 }

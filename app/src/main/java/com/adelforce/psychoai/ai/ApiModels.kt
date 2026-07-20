@@ -13,12 +13,30 @@ data class ResponseRequest(
     val input: String
 )
 
+@Serializable
+data class EmbeddingData(
+
+    val embedding: List<Float>
+)
+
+@Serializable
+data class EmbeddingResponse(
+
+    val data: List<EmbeddingData>
+)
 
 @Serializable
 data class ResponseResponse(
     val output: List<OutputItem>
 )
 
+@Serializable
+data class EmbeddingRequest(
+
+    val model: String,
+
+    val input: String
+)
 
 @Serializable
 data class OutputItem(
