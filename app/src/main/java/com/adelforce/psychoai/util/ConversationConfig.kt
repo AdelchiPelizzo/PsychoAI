@@ -8,11 +8,18 @@ object ConversationConfig {
     const val WIPE_SCREEN_TIMEOUT_MINUTES = 1
 
 
-    // Memory settings
+    // Memory update settings
 
     const val MEMORY_MIN_MESSAGES_BEFORE_UPDATE = 1
 
     const val MEMORY_UPDATE_INTERVAL_MINUTES = 15
+
+
+    // Memory search settings
+
+    const val MEMORY_SIMILARITY_THRESHOLD = 0.25f
+
+    const val MEMORY_SEARCH_LIMIT = 3
 
 
 

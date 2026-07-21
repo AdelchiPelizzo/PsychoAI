@@ -9,7 +9,6 @@ interface EmbeddingSearchEngine {
 
     suspend fun findNearest(
         currentEmbedding: List<Float>,
-        currentMessageId: Long,
-        limit: Int = 3
+        currentMessageId: Long
     ): List<SearchResult>
 }

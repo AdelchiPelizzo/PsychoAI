@@ -4,6 +4,7 @@ import android.util.Log
 import com.adelforce.psychoai.data.local.MessageDao
 import com.adelforce.psychoai.data.local.MessageEmbeddingDao
 import com.adelforce.psychoai.memory.CosineSimilarity
+import com.adelforce.psychoai.util.ConversationConfig
 import kotlinx.serialization.json.Json
 
 class LinearSearchEngine(
@@ -16,8 +17,7 @@ class LinearSearchEngine(
 
     override suspend fun findNearest(
         currentEmbedding: List<Float>,
-        currentMessageId: Long,
-        limit: Int
+        currentMessageId: Long
     ): List<SearchResult> {
 
 
@@ -109,16 +109,13 @@ class LinearSearchEngine(
 
         }
 
-
-
         return matches
             .filter {
-                it.similarity > 0.25f
+                it.similarity > ConversationConfig.MEMORY_SIMILARITY_THRESHOLD
             }
             .sortedByDescending {
                 it.similarity
             }
-            .take(limit)
-
+            .take(ConversationConfig.MEMORY_SEARCH_LIMIT)
     }
 }

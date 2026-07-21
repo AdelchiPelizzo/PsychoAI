@@ -7,6 +7,7 @@ import com.adelforce.psychoai.data.local.ThemeDao
 import com.adelforce.psychoai.data.model.ThemeMemory
 import com.adelforce.psychoai.memory.search.EmbeddingSearchEngine
 import com.adelforce.psychoai.prompt.MemoryContext
+import com.adelforce.psychoai.util.ConversationConfig
 
 
 class MemoryRetriever(
@@ -17,7 +18,6 @@ class MemoryRetriever(
 
 ) {
 
-
     suspend fun buildContext(
         conversationId: Long,
         currentMessageId: Long,
@@ -25,26 +25,21 @@ class MemoryRetriever(
         currentEmbedding: List<Float>
     ): MemoryContext {
 
-
         Log.d(
             "MemoryRetriever",
             "Searching memory for: $userMessage"
         )
-
 
         Log.d(
             "MemoryRetriever",
             "Current embedding size: ${currentEmbedding.size}"
         )
 
-
         val matches =
             searchEngine.findNearest(
                 currentEmbedding = currentEmbedding,
-                currentMessageId = currentMessageId,
-                limit = 3
+                currentMessageId = currentMessageId
             )
-
 
         val relevantMemories =
             matches.mapNotNull { match ->
@@ -57,14 +52,10 @@ class MemoryRetriever(
                 message?.text
             }
 
-
-
         Log.d(
             "MemoryRetriever",
             "TOP MATCHES = $matches"
         )
-
-
 
         val themes =
             listOf(
@@ -77,14 +68,10 @@ class MemoryRetriever(
                 )
             )
 
-
-
         return MemoryContext(
 
             recurringThemes = themes,
-
             recentMessages = emptyList(),
-
             relevantMemories = relevantMemories
 
         )
