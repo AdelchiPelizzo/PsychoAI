@@ -31,6 +31,7 @@ import com.adelforce.psychoai.memory.ThemeRepository
 import com.adelforce.psychoai.memory.MemoryRetriever
 import com.adelforce.psychoai.memory.MemorySynthesizer
 import com.adelforce.psychoai.memory.UserMemoryManager
+import com.adelforce.psychoai.memory.search.LinearSearchEngine
 import com.adelforce.psychoai.prompt.PromptBuilder
 
 @Composable
@@ -91,17 +92,15 @@ fun ChatScreen() {
                 messageThemeDao =
                     database.messageThemeDao(),
 
-                memoryRetriever =
-                    MemoryRetriever(
-
-                        messageEmbeddingDao =
-                            database.messageEmbeddingDao(),
-                        messageDao =
-                            database.messageDao(),
-                        themeDao =
-                            database.themeDao()
-
-                    ),
+                memoryRetriever = MemoryRetriever(
+//                    messageEmbeddingDao = database.messageEmbeddingDao(),
+                    messageDao = database.messageDao(),
+                    themeDao = database.themeDao(),
+                    searchEngine = LinearSearchEngine(
+                        embeddingDao = database.messageEmbeddingDao(),
+                        messageDao = database.messageDao()
+                    )
+                ),
 
                 promptBuilder =
                     PromptBuilder(
