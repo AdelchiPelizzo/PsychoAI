@@ -4,7 +4,10 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity(
-    tableName = "message_embeddings"
+    tableName = "message_embeddings",
+    indices = [
+        androidx.room.Index(value = ["messageId"], unique = true)
+    ]
 )
 data class MessageEmbeddingEntity(
 
@@ -13,7 +16,7 @@ data class MessageEmbeddingEntity(
 
     val messageId: Long,
 
-    val embedding: String,
+    val embedding: ByteArray,
 
     val createdAt: Long,
 

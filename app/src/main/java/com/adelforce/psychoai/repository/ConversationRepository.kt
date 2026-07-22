@@ -1,5 +1,10 @@
 package com.adelforce.psychoai.repository
 
+import android.content.Context
+import android.util.Log
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkManager
+import androidx.work.workDataOf
 import com.adelforce.psychoai.ai.OpenAIService
 import com.adelforce.psychoai.data.local.ConversationDao
 import com.adelforce.psychoai.data.local.ConversationEntity
@@ -12,13 +17,15 @@ import com.adelforce.psychoai.util.ConversationConfig
 import com.adelforce.psychoai.memory.ThemeRepository
 import com.adelforce.psychoai.memory.ThemeExtractor
 import com.adelforce.psychoai.data.local.MessageThemeEntity
+import com.adelforce.psychoai.memory.EmbeddingConverter
 import com.adelforce.psychoai.memory.MemoryRetriever
+import com.adelforce.psychoai.memory.MemoryUpdateWorker
 import com.adelforce.psychoai.memory.UserMemoryManager
 import com.adelforce.psychoai.prompt.PromptBuilder
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 
 class ConversationRepository(
+
+    private val context: Context,
 
     private val openAIService: OpenAIService,
 
@@ -140,13 +147,26 @@ class ConversationRepository(
             "Embedding size = ${embedding.size}"
         )
 
+        val inputData =
+            workDataOf(
+                "min_messages" to ConversationConfig.MEMORY_MIN_MESSAGES_BEFORE_UPDATE
+            )
 
-        // TEST ONLY to be run separately at intervals
-        userMemoryManager.updateMemory()
+        val request =
+            OneTimeWorkRequestBuilder<MemoryUpdateWorker>()
+                .setInputData(inputData)
+                .build()
 
+        WorkManager.getInstance(context)
+            .enqueue(request)
 
         val themes =
             themeExtractor.extractThemes(text)
+
+        Log.d(
+            "ThemeDebug",
+            "Extracted themes: $themes"
+        )
 
         themeRepository.saveThemesForMessage(
             messageId,
@@ -159,6 +179,15 @@ class ConversationRepository(
             now,
         )
 
+        messageEmbeddingDao.insert(
+            MessageEmbeddingEntity(
+                messageId = messageId,
+                conversationId = conversationId,
+                embedding = EmbeddingConverter.floatListToByteArray( embedding ),
+                createdAt = now
+            )
+        )
+
         val memoryContext =
             memoryRetriever.buildContext(
                 conversationId = conversationId,
@@ -166,15 +195,6 @@ class ConversationRepository(
                 userMessage = text,
                 currentEmbedding = embedding
             )
-
-        messageEmbeddingDao.insert(
-            MessageEmbeddingEntity(
-                messageId = messageId,
-                conversationId = conversationId,
-                embedding = Json.encodeToString(embedding),
-                createdAt = now
-            )
-        )
 
         val prompt =
             promptBuilder.build(

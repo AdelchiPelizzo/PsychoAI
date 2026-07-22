@@ -10,8 +10,8 @@ class OpenAIService {
     private val api =
         NetworkModule.openAIApi
 
-
     private val apiKey = BuildConfig.OPENAI_API_KEY
+
     init {
         println("API KEY LENGTH = ${apiKey.length}")
     }
@@ -28,10 +28,8 @@ class OpenAIService {
 
                 request =
                     EmbeddingRequest(
-
                         model =
                             "text-embedding-3-small",
-
                         input = text
                     )
             )

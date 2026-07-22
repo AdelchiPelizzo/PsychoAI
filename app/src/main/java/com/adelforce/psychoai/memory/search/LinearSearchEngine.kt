@@ -4,6 +4,7 @@ import android.util.Log
 import com.adelforce.psychoai.data.local.MessageDao
 import com.adelforce.psychoai.data.local.MessageEmbeddingDao
 import com.adelforce.psychoai.memory.CosineSimilarity
+import com.adelforce.psychoai.memory.EmbeddingConverter
 import com.adelforce.psychoai.util.ConversationConfig
 import kotlinx.serialization.json.Json
 
@@ -20,51 +21,33 @@ class LinearSearchEngine(
         currentMessageId: Long
     ): List<SearchResult> {
 
-
         val storedEmbeddings =
             embeddingDao.getAllExceptCurrent(currentMessageId)
-
 
         Log.d(
             "LinearSearchEngine",
             "Stored embeddings count: ${storedEmbeddings.size}"
         )
 
-
         val matches =
             mutableListOf<SearchResult>()
 
-
         for (item in storedEmbeddings) {
-
-
-            if (item.messageId == currentMessageId) {
-                continue
-            }
-
 
             val oldEmbedding =
                 try {
-
-                    Json.decodeFromString<List<Float>>(
+                    EmbeddingConverter.byteArrayToFloatList(
                         item.embedding
                     )
-
                 } catch (e: Exception) {
-
-
                     Log.e(
                         "LinearSearchEngine",
                         "Invalid embedding for message ${item.messageId}"
                     )
-
                     continue
                 }
 
-
-
             if (oldEmbedding.size != currentEmbedding.size) {
-
 
                 Log.w(
                     "LinearSearchEngine",
@@ -74,14 +57,11 @@ class LinearSearchEngine(
                 continue
             }
 
-
-
             val similarity =
                 CosineSimilarity.calculate(
                     currentEmbedding,
                     oldEmbedding
                 )
-
 
             matches.add(
                 SearchResult(
@@ -90,12 +70,10 @@ class LinearSearchEngine(
                 )
             )
 
-
             val matchedMessage =
                 messageDao.getById(
                     item.messageId
                 )
-
 
             Log.d(
                 "LinearSearchEngine",

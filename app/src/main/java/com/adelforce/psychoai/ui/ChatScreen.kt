@@ -68,6 +68,7 @@ fun ChatScreen() {
         remember {
 
             ConversationRepository(
+                context = context,
 
                 openAIService = openAIService,
 

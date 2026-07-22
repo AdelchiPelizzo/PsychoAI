@@ -6,18 +6,19 @@ class ThemeExtractor {
         message: String
     ): List<String> {
 
-        val text =
-            message.lowercase()
+        val words =
+            message
+                .lowercase()
+                .replace(Regex("[^a-z ]"), "")
+                .split(" ")
+                .filter { it.isNotBlank() }
+
 
         val detectedThemes =
             mutableListOf<String>()
 
-        ThemeDictionary.themes.forEach { (theme, keywords) ->
 
-            val words =
-                text
-                    .replace(Regex("[^a-z ]"), "")
-                    .split(" ")
+        ThemeDictionary.themes.forEach { (theme, keywords) ->
 
             val found =
                 keywords.any { keyword ->

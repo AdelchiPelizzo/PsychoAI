@@ -6,80 +6,52 @@ import androidx.work.WorkerParameters
 import com.adelforce.psychoai.ai.OpenAIService
 import com.adelforce.psychoai.data.local.DatabaseProvider
 
-
 class MemoryUpdateWorker(
     context: Context,
-    params: WorkerParameters
+    params: WorkerParameters,
 ) : CoroutineWorker(context, params) {
-
-
-    override suspend fun doWork(): Result {
-
-
-        return try {
-
-
+    override suspend fun doWork(): Result =
+        try {
             println(
-                "MEMORY WORKER STARTED"
+                "MEMORY WORKER STARTED",
             )
-
 
             val database =
                 DatabaseProvider.getDatabase(
-                    applicationContext
+                    applicationContext,
                 )
-
 
             val memoryManager =
                 UserMemoryManager(
-
                     synthesizer =
                         MemorySynthesizer(
                             openAIService =
-                                OpenAIService()
+                                OpenAIService(),
                         ),
-
                     messageDao =
                         database.messageDao(),
-
                     userMemoryDao =
-                        database.userMemoryDao()
+                        database.userMemoryDao(),
                 )
 
-
-            if(memoryManager.shouldUpdateMemory()) {
-
-
+            if (memoryManager.shouldUpdateMemory()) {
                 println(
-                    "MEMORY UPDATE REQUIRED"
+                    "MEMORY UPDATE REQUIRED",
                 )
-
 
                 memoryManager.updateMemory()
-
-
             } else {
-
-
                 println(
-                    "MEMORY UPDATE SKIPPED"
+                    "MEMORY UPDATE SKIPPED",
                 )
-
             }
 
-
             Result.success()
-
-
-        } catch(e: Exception) {
-
-
+        } catch (e: Exception) {
             println(
-                "MEMORY WORKER FAILED: ${e.message}"
+                "MEMORY WORKER FAILED: ${e.message}",
             )
-
 
             Result.retry()
         }
-    }
 }

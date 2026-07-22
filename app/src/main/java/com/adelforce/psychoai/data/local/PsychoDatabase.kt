@@ -13,7 +13,7 @@ import androidx.room.RoomDatabase
         UserMemoryEntity::class,
         MessageEmbeddingEntity::class   // NEW
     ],
-    version = 7
+    version = 8
 )
 abstract class PsychoDatabase : RoomDatabase() {
 
