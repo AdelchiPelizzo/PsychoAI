@@ -82,7 +82,7 @@ dependencies {
 
     implementation("androidx.compose.material:material-icons-extended")
 
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.11.0")
 
     implementation("com.squareup.retrofit2:retrofit:2.11.0")
     implementation("com.squareup.retrofit2:converter-kotlinx-serialization:2.11.0")
@@ -99,6 +99,8 @@ dependencies {
     ksp("androidx.room:room-compiler:2.8.0")
 
     implementation("androidx.work:work-runtime-ktx:2.10.1")
+
+    implementation("androidx.compose.foundation:foundation")
 
     testImplementation(libs.junit)
 

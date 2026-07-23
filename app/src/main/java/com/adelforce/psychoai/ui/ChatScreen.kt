@@ -37,6 +37,10 @@ import com.adelforce.psychoai.memory.EmbeddingCache
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
+//import androidx.compose.foundation.gestures.detectHorizontalDragGestures
+//import androidx.compose.ui.input.pointer.pointerInput
+
+
 @Composable
 fun ChatScreen() {
 
@@ -52,7 +56,6 @@ fun ChatScreen() {
 
     val embeddingCache =
         remember {
-
             EmbeddingCache(
                 embeddingDao = database.messageEmbeddingDao()
             )
@@ -73,7 +76,6 @@ fun ChatScreen() {
                 userMemoryDao = database.userMemoryDao()
             )
         }
-
 
     val repository =
         remember {
@@ -153,9 +155,7 @@ fun ChatScreen() {
     val messages by viewModel.messages.collectAsState()
 
     LaunchedEffect(conversationId) {
-
         listState.scrollToItem(0)
-
     }
 
     LaunchedEffect(messages.size) {
@@ -194,6 +194,8 @@ fun ChatScreen() {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
+            // HEADER
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center,
@@ -224,9 +226,13 @@ fun ChatScreen() {
                 )
             }
 
+
             Spacer(
                 modifier = Modifier.height(12.dp)
             )
+
+
+            // MESSAGES
 
             Card(
                 modifier = Modifier
@@ -261,6 +267,7 @@ fun ChatScreen() {
                                 }
                             }
 
+
                             items(messages) { message ->
 
                                 MessageBubble(
@@ -272,9 +279,13 @@ fun ChatScreen() {
                 }
             }
 
+
             Spacer(
                 modifier = Modifier.height(16.dp)
             )
+
+
+            // INPUT
 
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -294,6 +305,7 @@ fun ChatScreen() {
                     }
                 )
 
+
                 IconButton(
                     onClick = {
 
@@ -301,8 +313,7 @@ fun ChatScreen() {
                             message.text
                         )
 
-                        message =
-                            TextFieldValue("")
+                        message = TextFieldValue("")
                     }
                 ) {
 

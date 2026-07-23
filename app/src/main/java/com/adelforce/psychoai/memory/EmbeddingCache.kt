@@ -2,6 +2,7 @@ package com.adelforce.psychoai.memory
 
 import com.adelforce.psychoai.data.local.MessageEmbeddingDao
 import android.util.Log
+import com.adelforce.psychoai.util.ConversationConfig
 
 class EmbeddingCache(
     private val embeddingDao: MessageEmbeddingDao
@@ -14,11 +15,21 @@ class EmbeddingCache(
     suspend fun load() {
 
         val storedEmbeddings =
-            embeddingDao.getAll()
+            embeddingDao.getLimited(
+                ConversationConfig.MAX_RAM_CACHE_EMBEDDINGS
+            )
 
         val newCache = mutableMapOf<Long, FloatArray>()
 
         for (item in storedEmbeddings) {
+
+            if (newCache.size >= ConversationConfig.MAX_RAM_CACHE_EMBEDDINGS) {
+                Log.w(
+                    "EmbeddingCache",
+                    "CACHE LIMIT REACHED: ${ConversationConfig.MAX_RAM_CACHE_EMBEDDINGS}"
+                )
+                break
+            }
 
             try {
 

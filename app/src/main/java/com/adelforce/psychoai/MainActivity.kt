@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.runtime.LaunchedEffect
 import com.adelforce.psychoai.memory.MemoryScheduler
 import com.adelforce.psychoai.ui.ChatScreen
+import com.adelforce.psychoai.ui.MainPager
 import com.adelforce.psychoai.ui.theme.PsychoAITheme
 
 class MainActivity : ComponentActivity() {
@@ -26,7 +27,7 @@ class MainActivity : ComponentActivity() {
                     MemoryScheduler.schedule(this@MainActivity)
                 }
 
-                ChatScreen()
+                MainPager()
 
             }
         }

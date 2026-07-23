@@ -49,5 +49,15 @@ interface MessageEmbeddingDao {
         messageId: Long
     ): MessageEmbeddingEntity?
 
+    @Query("""
+        SELECT * FROM message_embeddings
+        ORDER BY messageId DESC
+        LIMIT :limit
+        """
+    )
+    suspend fun getLimited(
+        limit: Int
+    ): List<MessageEmbeddingEntity>
+
 
 }
