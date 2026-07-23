@@ -33,6 +33,9 @@ import com.adelforce.psychoai.memory.MemorySynthesizer
 import com.adelforce.psychoai.memory.UserMemoryManager
 import com.adelforce.psychoai.memory.search.LinearSearchEngine
 import com.adelforce.psychoai.prompt.PromptBuilder
+import com.adelforce.psychoai.memory.EmbeddingCache
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 @Composable
 fun ChatScreen() {
@@ -46,6 +49,14 @@ fun ChatScreen() {
 
     val messageDao =
         database.messageDao()
+
+    val embeddingCache =
+        remember {
+
+            EmbeddingCache(
+                embeddingDao = database.messageEmbeddingDao()
+            )
+        }
 
     val openAIService =
         remember {
@@ -94,7 +105,6 @@ fun ChatScreen() {
                     database.messageThemeDao(),
 
                 memoryRetriever = MemoryRetriever(
-//                    messageEmbeddingDao = database.messageEmbeddingDao(),
                     messageDao = database.messageDao(),
                     themeDao = database.themeDao(),
                     searchEngine = LinearSearchEngine(
@@ -114,7 +124,11 @@ fun ChatScreen() {
         }
 
     LaunchedEffect(Unit) {
-        userMemoryManager.initializeMemoryIfNeeded()
+
+        withContext(Dispatchers.IO) {
+            embeddingCache.load()
+            userMemoryManager.initializeMemoryIfNeeded()
+        }
     }
 
     val factory =

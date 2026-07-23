@@ -6,7 +6,6 @@ import com.adelforce.psychoai.data.local.MessageEmbeddingDao
 import com.adelforce.psychoai.memory.CosineSimilarity
 import com.adelforce.psychoai.memory.EmbeddingConverter
 import com.adelforce.psychoai.util.ConversationConfig
-import kotlinx.serialization.json.Json
 
 class LinearSearchEngine(
 

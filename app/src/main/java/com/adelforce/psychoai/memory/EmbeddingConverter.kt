@@ -5,8 +5,8 @@ import java.nio.ByteOrder
 
 object EmbeddingConverter {
 
-    fun floatListToByteArray(
-        embedding: List<Float>
+    fun floatArrayToByteArray(
+        embedding: FloatArray
     ): ByteArray {
 
         val buffer =
@@ -22,9 +22,9 @@ object EmbeddingConverter {
     }
 
 
-    fun byteArrayToFloatList(
+    fun byteArrayToFloatArray(
         bytes: ByteArray
-    ): List<Float> {
+    ): FloatArray {
 
         require(bytes.size % 4 == 0) {
             "Invalid embedding byte size: ${bytes.size}"
@@ -36,14 +36,33 @@ object EmbeddingConverter {
                 .order(ByteOrder.LITTLE_ENDIAN)
 
         val floats =
-            ArrayList<Float>(
-                bytes.size / 4
-            )
+            FloatArray(bytes.size / 4)
+
+        var index = 0
 
         while (buffer.hasRemaining()) {
-            floats.add(buffer.float)
+            floats[index++] = buffer.float
         }
 
         return floats
     }
+
+
+    // ----------------------------------------------------------------
+    // Temporary compatibility methods
+    // Remove these after the migration is complete.
+    // ----------------------------------------------------------------
+
+    fun floatListToByteArray(
+        embedding: List<Float>
+    ): ByteArray =
+        floatArrayToByteArray(
+            embedding.toFloatArray()
+        )
+
+
+    fun byteArrayToFloatList(
+        bytes: ByteArray
+    ): List<Float> =
+        byteArrayToFloatArray(bytes).toList()
 }

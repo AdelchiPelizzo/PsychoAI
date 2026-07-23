@@ -2,6 +2,8 @@ package com.adelforce.psychoai.memory
 
 import android.content.Context
 import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.adelforce.psychoai.util.ConversationConfig
@@ -11,9 +13,11 @@ import java.util.concurrent.TimeUnit
 object MemoryScheduler {
 
 
-    fun schedule(
-        context: Context
-    ) {
+    private const val PERIODIC_WORK_NAME = "memory_update_periodic"
+    private const val IMMEDIATE_WORK_NAME = "memory_update_now"
+    private const val WORK_NAME = "memory_update"
+
+    fun schedule(context: Context) {
 
         val request =
             PeriodicWorkRequestBuilder<MemoryUpdateWorker>(
@@ -25,11 +29,23 @@ object MemoryScheduler {
 
         WorkManager.getInstance(context)
             .enqueueUniquePeriodicWork(
-
-                "memory_update",
-
+                PERIODIC_WORK_NAME,
                 ExistingPeriodicWorkPolicy.KEEP,
+                request
+            )
+    }
 
+    fun runNow(context: Context) {
+
+        val request =
+            OneTimeWorkRequestBuilder<MemoryUpdateWorker>()
+                .build()
+
+
+        WorkManager.getInstance(context)
+            .enqueueUniqueWork(
+                IMMEDIATE_WORK_NAME,
+                ExistingWorkPolicy.KEEP,
                 request
             )
     }
