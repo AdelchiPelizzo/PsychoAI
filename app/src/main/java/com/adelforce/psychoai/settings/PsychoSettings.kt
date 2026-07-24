@@ -3,19 +3,14 @@ package com.adelforce.psychoai.settings
 
 data class PsychoSettings(
 
-    // 🧠 Recollection
-    // 0 = forgetful, 1 = deep memory
-    val recollectionLevel: Float = 0.5f,
+    // 0 = weak memory, 4 = deep memory
+    val memoryPowerLevel: Int = 2,
 
 
-    // 🔎 Insight depth
-    // 0 = only strong matches
-    // 1 = more subtle connections
-    val insightLevel: Float = 0.5f,
+    // 0 = strict matches, 4 = creative connections
+    val insightDepthLevel: Int = 2,
 
 
-    // 💬 Conversation flow
-    // 0 = short sessions
-    // 1 = longer continuity
-    val conversationLevel: Float = 0.5f
+    // 0 = short sessions, 4 = long continuity
+    val conversationFlowLevel: Int = 2
 )

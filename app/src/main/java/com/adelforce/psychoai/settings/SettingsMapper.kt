@@ -1,5 +1,6 @@
 package com.adelforce.psychoai.settings
 
+
 data class ConversationSettings(
     val maxRamCacheEmbeddings: Int,
     val memoryUpdateIntervalMinutes: Int,
@@ -10,129 +11,229 @@ data class ConversationSettings(
     val wipeScreenTimeoutMinutes: Int,
 )
 
+
 object SettingsMapper {
-    fun map(settings: PsychoSettings): ConversationSettings {
-        val recollection =
-            mapRecollection(
-                settings.recollectionLevel,
+
+
+    fun map(
+        settings: PsychoSettings
+    ): ConversationSettings {
+
+
+        val memory =
+            mapMemoryPower(
+                settings.memoryPowerLevel
             )
+
 
         val insight =
-            mapInsight(
-                settings.insightLevel,
+            mapInsightDepth(
+                settings.insightDepthLevel
             )
+
 
         val conversation =
-            mapConversation(
-                settings.conversationLevel,
+            mapConversationFlow(
+                settings.conversationFlowLevel
             )
 
+
         return ConversationSettings(
+
             maxRamCacheEmbeddings =
-                recollection.maxRamCacheEmbeddings,
+                memory.maxRamCacheEmbeddings,
+
             memoryUpdateIntervalMinutes =
-                recollection.memoryUpdateIntervalMinutes,
+                memory.memoryUpdateIntervalMinutes,
+
             memoryMinMessagesBeforeUpdate =
-                recollection.memoryMinMessagesBeforeUpdate,
+                memory.memoryMinMessagesBeforeUpdate,
+
+
             memorySimilarityThreshold =
-                insight.similarityThreshold,
+                insight.memorySimilarityThreshold,
+
             memorySearchLimit =
-                insight.searchLimit,
+                insight.memorySearchLimit,
+
+
             inactivityTimeoutMinutes =
                 conversation.inactivityTimeoutMinutes,
+
             wipeScreenTimeoutMinutes =
-                conversation.wipeScreenTimeoutMinutes,
+                conversation.wipeScreenTimeoutMinutes
         )
     }
 
-    private fun mapRecollection(level: Float): RecollectionSettings =
-        when {
-            level < 0.33f ->
 
-                RecollectionSettings(
+
+    private fun mapMemoryPower(
+        level: Int
+    ): MemorySettings {
+
+
+        return when(level) {
+
+
+            0 ->
+                MemorySettings(
                     maxRamCacheEmbeddings = 1000,
                     memoryUpdateIntervalMinutes = 60,
-                    memoryMinMessagesBeforeUpdate = 30,
+                    memoryMinMessagesBeforeUpdate = 50
                 )
 
-            level < 0.66f ->
 
-                RecollectionSettings(
+            1 ->
+                MemorySettings(
                     maxRamCacheEmbeddings = 2500,
                     memoryUpdateIntervalMinutes = 30,
-                    memoryMinMessagesBeforeUpdate = 20,
+                    memoryMinMessagesBeforeUpdate = 30
                 )
 
-            else ->
 
-                RecollectionSettings(
+            2 ->
+                MemorySettings(
                     maxRamCacheEmbeddings = 5000,
                     memoryUpdateIntervalMinutes = 15,
-                    memoryMinMessagesBeforeUpdate = 10,
-                )
-        }
-
-    private fun mapInsight(level: Float): InsightSettings =
-        when {
-            level < 0.33f ->
-
-                InsightSettings(
-                    similarityThreshold = 0.50f,
-                    searchLimit = 1,
+                    memoryMinMessagesBeforeUpdate = 10
                 )
 
-            level < 0.66f ->
 
-                InsightSettings(
-                    similarityThreshold = 0.35f,
-                    searchLimit = 3,
+            3 ->
+                MemorySettings(
+                    maxRamCacheEmbeddings = 7500,
+                    memoryUpdateIntervalMinutes = 10,
+                    memoryMinMessagesBeforeUpdate = 5
                 )
+
 
             else ->
-
-                InsightSettings(
-                    similarityThreshold = 0.20f,
-                    searchLimit = 5,
+                MemorySettings(
+                    maxRamCacheEmbeddings = 10000,
+                    memoryUpdateIntervalMinutes = 5,
+                    memoryMinMessagesBeforeUpdate = 1
                 )
         }
+    }
 
-    private fun mapConversation(level: Float): ConversationFlowSettings =
-        when {
-            level < 0.33f ->
 
+
+    private fun mapInsightDepth(
+        level: Int
+    ): InsightSettings {
+
+
+        return when(level) {
+
+
+            0 ->
+                InsightSettings(
+                    memorySimilarityThreshold = 0.60f,
+                    memorySearchLimit = 1
+                )
+
+
+            1 ->
+                InsightSettings(
+                    memorySimilarityThreshold = 0.50f,
+                    memorySearchLimit = 2
+                )
+
+
+            2 ->
+                InsightSettings(
+                    memorySimilarityThreshold = 0.35f,
+                    memorySearchLimit = 3
+                )
+
+
+            3 ->
+                InsightSettings(
+                    memorySimilarityThreshold = 0.25f,
+                    memorySearchLimit = 5
+                )
+
+
+            else ->
+                InsightSettings(
+                    memorySimilarityThreshold = 0.10f,
+                    memorySearchLimit = 8
+                )
+        }
+    }
+
+
+
+    private fun mapConversationFlow(
+        level: Int
+    ): ConversationFlowSettings {
+
+
+        return when(level) {
+
+
+            0 ->
                 ConversationFlowSettings(
                     inactivityTimeoutMinutes = 1,
-                    wipeScreenTimeoutMinutes = 1,
+                    wipeScreenTimeoutMinutes = 1
                 )
 
-            level < 0.66f ->
 
+            1 ->
+                ConversationFlowSettings(
+                    inactivityTimeoutMinutes = 5,
+                    wipeScreenTimeoutMinutes = 3
+                )
+
+
+            2 ->
                 ConversationFlowSettings(
                     inactivityTimeoutMinutes = 10,
-                    wipeScreenTimeoutMinutes = 5,
+                    wipeScreenTimeoutMinutes = 5
                 )
 
-            else ->
 
+            3 ->
                 ConversationFlowSettings(
                     inactivityTimeoutMinutes = 30,
-                    wipeScreenTimeoutMinutes = 15,
+                    wipeScreenTimeoutMinutes = 15
+                )
+
+
+            else ->
+                ConversationFlowSettings(
+                    inactivityTimeoutMinutes = 60,
+                    wipeScreenTimeoutMinutes = 30
                 )
         }
+    }
 }
 
-private data class RecollectionSettings(
+
+
+private data class MemorySettings(
+
     val maxRamCacheEmbeddings: Int,
+
     val memoryUpdateIntervalMinutes: Int,
-    val memoryMinMessagesBeforeUpdate: Int,
+
+    val memoryMinMessagesBeforeUpdate: Int
 )
+
+
 
 private data class InsightSettings(
-    val similarityThreshold: Float,
-    val searchLimit: Int,
+
+    val memorySimilarityThreshold: Float,
+
+    val memorySearchLimit: Int
 )
 
+
+
 private data class ConversationFlowSettings(
+
     val inactivityTimeoutMinutes: Int,
-    val wipeScreenTimeoutMinutes: Int,
+
+    val wipeScreenTimeoutMinutes: Int
 )

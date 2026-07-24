@@ -1,11 +1,16 @@
 package com.adelforce.psychoai.settings
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.adelforce.psychoai.util.ConversationConfig
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
-class SettingsViewModel : ViewModel() {
+class SettingsViewModel(
+    private val dataStore: SettingsDataStore
+) : ViewModel() {
     private val _settings =
         MutableStateFlow(
             PsychoSettings(),
@@ -14,24 +19,83 @@ class SettingsViewModel : ViewModel() {
     val settings: StateFlow<PsychoSettings> =
         _settings.asStateFlow()
 
-    fun setRecollection(value: Float) {
-        _settings.value =
-            _settings.value.copy(
-                recollectionLevel = value,
+    private fun update(
+        transform: (PsychoSettings)->PsychoSettings
+    ) {
+
+        val newSettings =
+            transform(
+                _settings.value
             )
+
+        _settings.value =
+            newSettings
+
+        viewModelScope.launch {
+
+            dataStore.save(
+                newSettings
+            )
+
+            ConversationConfig.apply(
+                SettingsMapper.map(
+                    newSettings
+                )
+            )
+        }
     }
 
-    fun setInsight(value: Float) {
-        _settings.value =
-            _settings.value.copy(
-                insightLevel = value,
+    fun setMemoryPower(level: Int) {
+
+        updateSettings {
+            it.copy(
+                memoryPowerLevel = level
             )
+        }
     }
 
-    fun setConversation(value: Float) {
-        _settings.value =
-            _settings.value.copy(
-                conversationLevel = value,
+    fun setInsightDepth(level: Int) {
+
+        updateSettings {
+            it.copy(
+                insightDepthLevel = level
             )
+        }
+    }
+
+    fun setConversationFlow(level: Int) {
+
+        updateSettings {
+            it.copy(
+                conversationFlowLevel = level
+            )
+        }
+    }
+
+    private fun updateSettings(
+        transform: (PsychoSettings) -> PsychoSettings
+    ) {
+
+        val newSettings =
+            transform(
+                _settings.value
+            )
+
+        _settings.value =
+            newSettings
+
+        viewModelScope.launch {
+
+            dataStore.save(
+                newSettings
+            )
+
+            ConversationConfig.apply(
+
+                SettingsMapper.map(
+                    newSettings
+                )
+            )
+        }
     }
 }

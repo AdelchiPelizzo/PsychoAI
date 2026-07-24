@@ -7,13 +7,28 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-
+import androidx.compose.ui.platform.LocalContext
 
 
 @Composable
 fun SettingsScreen(
-    onBack: () -> Unit,
-    viewModel: SettingsViewModel = viewModel()) {
+    onBack: () -> Unit
+) {
+
+    val context = LocalContext.current
+
+    val factory =
+        remember {
+
+            SettingsViewModelFactory(
+                SettingsDataStore(context)
+            )
+        }
+
+    val viewModel: SettingsViewModel =
+        viewModel(
+            factory = factory
+        )
 
     val settings by
     viewModel.settings.collectAsState()
@@ -45,11 +60,16 @@ fun SettingsScreen(
         ) {
             Slider(
                 value =
-                    settings.recollectionLevel,
+                    settings.memoryPowerLevel.toFloat(),
                 onValueChange =
                     {
-                        viewModel.setRecollection(it)
+                        viewModel.setMemoryPower(
+                            it.toInt()
+                        )
                     },
+                valueRange = 0f..4f,
+
+                steps = 3
             )
 
             SliderLabels(
@@ -65,11 +85,18 @@ fun SettingsScreen(
         ) {
             Slider(
                 value =
-                    settings.insightLevel,
+                    settings.insightDepthLevel.toFloat(),
+
                 onValueChange =
                     {
-                        viewModel.setInsight(it)
+                        viewModel.setInsightDepth(
+                            it.toInt()
+                        )
                     },
+
+                valueRange = 0f..4f,
+
+                steps = 3
             )
 
             SliderLabels(
@@ -85,11 +112,18 @@ fun SettingsScreen(
         ) {
             Slider(
                 value =
-                    settings.conversationLevel,
+                    settings.conversationFlowLevel.toFloat(),
+
                 onValueChange =
                     {
-                        viewModel.setConversation(it)
+                        viewModel.setConversationFlow(
+                            it.toInt()
+                        )
                     },
+
+                valueRange = 0f..4f,
+
+                steps = 3
             )
 
             SliderLabels(

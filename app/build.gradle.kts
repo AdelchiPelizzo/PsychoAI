@@ -102,6 +102,10 @@ dependencies {
 
     implementation("androidx.compose.foundation:foundation")
 
+    implementation("androidx.datastore:datastore-preferences:1.1.7")
+
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.11.0")
+
     testImplementation(libs.junit)
 
     androidTestImplementation(platform(libs.androidx.compose.bom))
